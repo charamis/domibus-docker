@@ -1,9 +1,11 @@
 version: "3"
 
 services:
-  db:
-    container_name: db
+  mysql:
+    container_name: mysql
     build: ../mysql
+    cap_add:
+      - SYS_NICE
     environment:
       - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_DATABASE=domibus
@@ -11,11 +13,11 @@ services:
       - MYSQL_PASSWORD=edelivery
     expose:
       - "3306"
-  server:
-    container_name: server
+  domibus:
+    container_name: domibus
     build: ../tomcat
     command: dockerize -wait tcp://mysql:3306 -timeout 20s
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      - mysql
