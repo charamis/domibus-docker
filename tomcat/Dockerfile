@@ -18,8 +18,8 @@ RUN apt-get install -y curl
 RUN wget https://ec.europa.eu/cefdigital/artifact/repository/eDelivery/eu/domibus/domibus-distribution/$DOMIBUS_VERSION/domibus-distribution-$DOMIBUS_VERSION-tomcat-full.zip
 RUN unzip -d $TOMCAT_FULL_DISTRIBUTION domibus-distribution-$DOMIBUS_VERSION-tomcat-full.zip
 
-#RUN wget https://ec.europa.eu/cefdigital/artifact/repository/eDelivery/eu/domibus/domibus-distribution/$DOMIBUS_VERSION/domibus-distribution-$DOMIBUS_VERSION-sample-configuration-and-testing.zip
-#RUN unzip -d $DOMIBUS_DIST domibus-distribution-$DOMIBUS_VERSION-sample-configuration-and-testing.zip
+RUN wget https://ec.europa.eu/cefdigital/artifact/repository/eDelivery/eu/domibus/domibus-distribution/$DOMIBUS_VERSION/domibus-distribution-$DOMIBUS_VERSION-sample-configuration-and-testing.zip
+RUN unzip -d $DOMIBUS_DIST domibus-distribution-$DOMIBUS_VERSION-sample-configuration-and-testing.zip
 
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
@@ -41,12 +41,27 @@ RUN echo "s/localhost:3306/mysql:3306/g"
 ######## Set Test Platform certificates ########
 RUN mkdir $CATALINA_HOME/conf/domibus/keystores
 RUN cp $DOMIBUS_DIST/conf/domibus/keystores/* $CATALINA_HOME/conf/domibus/keystores/
+RUN mkdir $CATALINA_HOME/conf/pmodes
+RUN cp $DOMIBUS_DIST/conf/pmodes/* $CATALINA_HOME/conf/pmodes/
+
 #RUN cp signOnly.xml $CATALINA_HOME/conf/domibus/policies/
 #RUN cp doNothingPolicy.xml $CATALINA_HOME/conf/domibus/policies/
 
+RUN rm $CATALINA_HOME/bin/setenv.sh
+RUN touch $CATALINA_HOME/bin/setenv.sh
+
+RUN echo '#!/bin/bash' >> $CATALINA_HOME/bin/setenv.sh
+RUN echo 'export CATALINA_HOME=/usr/local/tomcat/domibus' >> $CATALINA_HOME/bin/setenv.sh
+RUN echo 'export CATALINA_TMPDIR=/usr/local/tomcat/domibus/temp' >> $CATALINA_HOME/bin/setenv.sh
+RUN echo 'export JAVA_OPTS="$JAVA_OPTS -Djava.protocol.handler.pkgs=org.apache.catalina.webresources"' >> $CATALINA_HOME/bin/setenv.sh
+RUN echo 'export JAVA_OPTS="$JAVA_OPTS -Xms128m -Xmx1024m "' >> $CATALINA_HOME/bin/setenv.sh
+RUN echo 'export JAVA_OPTS="$JAVA_OPTS -Ddomibus.config.location=$CATALINA_HOME/conf/domibus"' >> $CATALINA_HOME/bin/setenv.sh
+
+RUN cat $CATALINA_HOME/bin/setenv.sh
+
 RUN echo '#!/bin/bash' >> $DOMIBUS_DIST/entrypoint.sh
 RUN echo "cd $CATALINA_HOME" >> $DOMIBUS_DIST/entrypoint.sh
-RUN echo './bin/catalina.sh start' >> $DOMIBUS_DIST/entrypoint.sh
+RUN echo './bin/startup.sh start' >> $DOMIBUS_DIST/entrypoint.sh
 RUN echo "while true ; do sleep 1 ; done;" >> $DOMIBUS_DIST/entrypoint.sh
 RUN chmod 777 $DOMIBUS_DIST/entrypoint.sh
 EXPOSE 8080
