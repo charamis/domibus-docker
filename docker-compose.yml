@@ -3,7 +3,7 @@ version: "3"
 services:
   mysql:
     container_name: mysql
-    build: ../mysql
+    build: ./mysql
     cap_add:
       - SYS_NICE
     environment:
@@ -15,7 +15,7 @@ services:
       - "3306"
   domibus:
     container_name: domibus
-    build: ../tomcat
+    build: ./tomcat
     command: dockerize -wait tcp://mysql:3306 -timeout 20s
     ports:
       - "8080:8080"
