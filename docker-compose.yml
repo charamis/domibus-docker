@@ -1,9 +1,11 @@
-version: "3"
+version: "3.3"
 
 services:
   mysql:
     container_name: mysql
-    build: ./mysql
+    build:
+      dockerfile: Dockerfile
+      context: ./mysql
     cap_add:
       - SYS_NICE
     environment:
@@ -13,10 +15,15 @@ services:
       - MYSQL_PASSWORD=edelivery
     expose:
       - "3306"
-  domibus:
-    container_name: domibus
-    build: ./tomcat
+  edelivery:
+    container_name: edelivery
+    build:
+      dockerfile: Dockerfile
+      context: ./tomcat
+    image: edelivery:latest
     command: dockerize -wait tcp://mysql:3306 -timeout 20s
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     depends_on:

@@ -1,0 +1,32 @@
+{
+	"AWSEBDockerrunVersion": 3,
+	"containerDefinitions": [
+		{
+			"name": "edelivery",
+			"image": {
+				"Name": "832733282197.dkr.ecr.ap-southeast-2.amazonaws.com/edelivery:latest",
+				"Update": "true"
+			},
+			"hostname": "edelivery",
+			"essential": true,
+			"portMappings": [
+				{
+					"hostPort": 8080,
+					"containerPort": 8080
+				}
+			],
+			"links": [
+				"mysql"
+			]
+		},
+		{
+			"name": "mysql",
+			"image": {
+				"Name": "832733282197.dkr.ecr.ap-southeast-2.amazonaws.com/mysql:latest",
+				"Update": "true"
+			},
+			"hostname": "mysql",
+			"essential": true
+		}
+	]
+}
